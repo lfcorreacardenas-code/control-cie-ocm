@@ -9,7 +9,7 @@ st.set_page_config(page_title="Dashboard OCM - Alertas CIE", layout="wide")
 st.title("⚡ Monitoreo de Análisis de Aceite Dieléctrico")
 st.markdown("### Control de Plazos y Envíos a Clientes")
 
-ruta_archivo = r"C:\Users\luis_correa\Desktop\PLAZOS\Reporte_Refinado.xlsx"
+ruta_archivo = "Reporte_Refinado.xlsx"
 
 if os.path.exists(ruta_archivo):
     # 1. Carga de datos y persistencia
@@ -101,3 +101,4 @@ if os.path.exists(ruta_archivo):
 
 else:
     st.error("Archivo no encontrado.")
+
