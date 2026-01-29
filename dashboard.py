@@ -43,7 +43,7 @@ if os.path.exists(ruta_archivo):
     # 3. Métricas con Alerta
     hoy = date.today().strftime('%d-%m-%Y')
     pendientes_vencidos = len(df_filtrado[(df_filtrado['Enviado'] == False) & 
-                                          (df_filtrado['Fecha Requerida'].dt.date <= hoy)])
+                                          (df_filtrado['Fecha Requerida'].dt.date.strftime('%d-%m-%Y') <= hoy)])
 
     m1, m2, m3 = st.columns(3)
     m1.metric("Muestras en Pantalla", len(df_filtrado))
@@ -101,5 +101,6 @@ if os.path.exists(ruta_archivo):
 
 else:
     st.error("Archivo no encontrado.")
+
 
 
