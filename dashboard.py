@@ -41,7 +41,7 @@ if os.path.exists(ruta_archivo):
         df_filtrado = df_filtrado[df_filtrado['Enviado'] == False]
 
     # 3. Métricas con Alerta
-    hoy = date.today()
+    hoy = date.today().strftime('%d-%m-%Y')
     pendientes_vencidos = len(df_filtrado[(df_filtrado['Enviado'] == False) & 
                                           (df_filtrado['Fecha Requerida'].dt.date <= hoy)])
 
@@ -101,4 +101,5 @@ if os.path.exists(ruta_archivo):
 
 else:
     st.error("Archivo no encontrado.")
+
 
