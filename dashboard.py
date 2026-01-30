@@ -17,7 +17,10 @@ def abreviar_analisis(texto):
     mapeo = {
         "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Contenido de Inhibidor",
         "Conteo de Partículas en Aceite Mineral Aislante por el Contador de Partículas Automático": "Conteo de Particulas",
-        "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "Densidad"
+        "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "Densidad",
+        "Elementos en Aceites Dieléctricos por ICP-AES": "Metales",
+        "Bifenilos Policlorados en Líquidos Aislantes por GC - (PCB´s)": "PCB",
+        "Gases Disueltos en Aceite Aislante Eléctrico por GC-Headspace": "Gases Disueltos"
     }
     
     # Buscamos si el texto largo existe en nuestro diccionario
@@ -103,3 +106,4 @@ try:
 
 except Exception as e:
     st.error(f"Error: {e}")
+
