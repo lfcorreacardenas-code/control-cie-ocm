@@ -146,7 +146,7 @@ try:
         
         # AJUSTE DE VISIBILIDAD DE LEYENDA
         fig_pie.update_layout(
-            font=dict(color="#000000", size=13, family="Arial Black"), # Letras negras
+            font=dict(color="#000000", size=12, family="Arial"), # Letras negras
             legend=dict(font=dict(color="black", size=12)),
             paper_bgcolor='rgba(0,0,0,0)'
         )
@@ -181,4 +181,5 @@ try:
 
 except Exception as e:
     st.error(f"Se detectó un inconveniente: {e}")
+
 
