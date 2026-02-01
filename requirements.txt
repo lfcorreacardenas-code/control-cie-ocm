@@ -1,4 +1,6 @@
 st-gsheets-connection
 streamlit
+plotly
 pandas
 openpyxl
+
