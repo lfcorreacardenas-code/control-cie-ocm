@@ -112,12 +112,12 @@ try:
     m3.metric("Eficiencia", f"{eficiencia:.1f}%")
     m4.metric("Cliente", cliente_sel if cliente_sel != "TODOS" else "General")
 
-    # --- GRÁFICOS (TEXTO FORZADO A NEGRO) ---
+   # --- GRÁFICOS CON TEXTO NEGRO INTENSO ---
     st.write("---")
     g1, g2 = st.columns([1.5, 1])
     
     with g1:
-        st.subheader("📊 Análisis por Cliente")
+        st.subheader("📊 Volumen por Cliente")
         eje_y = 'Det_Corto' if cliente_sel != "TODOS" else 'Cliente'
         top_data = df_filtrado[eje_y].value_counts().reset_index().head(10)
         top_data.columns = [eje_y, 'Muestras']
@@ -126,28 +126,32 @@ try:
                          color_discrete_sequence=['#FF6B00'], text_auto=True,
                          template="plotly_white")
         
+        # AJUSTE DE VISIBILIDAD DE EJES
         fig_bar.update_layout(
-            font=dict(color="#000000", size=13), # TEXTO NEGRO PARA NOMBRES
+            font=dict(color="#000000", size=14, family="Arial Black"), # Letras negras y gruesas
             paper_bgcolor='rgba(0,0,0,0)', 
             plot_bgcolor='rgba(0,0,0,0)',
-            yaxis={'categoryorder':'total ascending'}
+            xaxis=dict(tickfont=dict(color='black', size=12), title_font=dict(color='black')),
+            yaxis=dict(tickfont=dict(color='black', size=12), title_font=dict(color='black'), categoryorder='total ascending')
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with g2:
-        st.subheader("🔬 Mix de Determinaciones")
+        st.subheader("🔬 Mix de Análisis")
         mix = df_filtrado['Det_Corto'].value_counts().reset_index()
         
         fig_pie = px.pie(mix, values='count', names='Det_Corto', 
-                         color_discrete_sequence=['#FF6B00', '#222222', '#555555', '#888888'],
+                         color_discrete_sequence=['#FF6B00', '#1A1A1A', '#444444', '#777777'],
                          template="plotly_white")
         
+        # AJUSTE DE VISIBILIDAD DE LEYENDA
         fig_pie.update_layout(
-            font=dict(color="#000000", size=13), # TEXTO NEGRO PARA LEYENDA
+            font=dict(color="#000000", size=13, family="Arial Black"), # Letras negras
+            legend=dict(font=dict(color="black", size=12)),
             paper_bgcolor='rgba(0,0,0,0)'
         )
         st.plotly_chart(fig_pie, use_container_width=True)
-
+        
     # --- TABLA ---
     st.write("---")
     st.subheader("📋 Detalle de la Operación")
@@ -177,3 +181,4 @@ try:
 
 except Exception as e:
     st.error(f"Se detectó un inconveniente: {e}")
+
