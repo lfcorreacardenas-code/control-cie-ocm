@@ -14,8 +14,14 @@ def abreviar_analisis(texto):
     mapeo = {
         "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Contenido de Inhibidor",
         "Conteo de Partículas en Aceite Mineral Aislante por el Contador de Partículas Automático": "Conteo de Particulas",
-        "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "Densidad",
-        "Bifenilos Policlorados": "PCB"
+        "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
+        "Bifenilos Policlorados": "PCB",
+        "Color ASTM": "FQ",
+        "Rigidez Dieléctrica del Aceite": "FQ",
+        "Exámen Visual de los Aceites Eléctricos Usados": "FQ",
+        "Tensión Interfacial -Método del Anillo": "FQ",
+        "Agua por Titulación Columetrica Karl Fischer": "FQ",
+        "Apariencia": "FQ"
     }
     for largo, corto in mapeo.items():
         if largo in texto: return corto
@@ -108,3 +114,4 @@ try:
 
 except Exception as e:
     st.error(f"Error al cargar datos: {e}")
+
