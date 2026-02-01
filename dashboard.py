@@ -17,6 +17,7 @@ def abreviar_analisis(texto):
         "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
         "Bifenilos Policlorados": "PCB",
         "Color ASTM": "FQ",
+        "Número de Acidez por Titulación - Indicación Color": "FQ",
         "Rigidez Dieléctrica del Aceite": "FQ",
         "Exámen Visual de los Aceites Eléctricos Usados": "FQ",
         "Tensión Interfacial -Método del Anillo": "FQ",
@@ -114,4 +115,5 @@ try:
 
 except Exception as e:
     st.error(f"Error al cargar datos: {e}")
+
 
