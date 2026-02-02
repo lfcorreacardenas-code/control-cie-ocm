@@ -64,7 +64,7 @@ aplicar_estilos()
 # --- CARGA DE DATOS ---
 def abreviar_analisis(texto):
     if not isinstance(texto, str): return texto
-     mapeo = {
+    mapeo = {
         "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Contenido de Inhibidor",
         "Conteo de Partículas en Aceite Mineral Aislante por el Contador de Partículas Automático": "Conteo de Particulas",
         "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
@@ -189,6 +189,7 @@ try:
 
 except Exception as e:
     st.error(f"Se detectó un inconveniente: {e}")
+
 
 
 
