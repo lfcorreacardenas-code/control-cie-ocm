@@ -69,7 +69,15 @@ try:
     df_original = cargar_datos_seguro()
     df = df_original.copy()
 
-    # Preparación de columnas
+    # --- NUEVA LÓGICA DE PROCESAMIENTO DE FECHAS ---
+    # Convertimos a fecha forzando errores a 'NaT' (Not a Time) para evitar el 'None'
+    df['Recibido Laboratorio'] = pd.to_datetime(df['Recibido Laboratorio'], errors='coerce', dayfirst=True)
+    df['Fecha Requerida'] = pd.to_datetime(df['Fecha Requerida'], errors='coerce', dayfirst=True)
+
+    # Si después de la conversión siguen apareciendo vacíos, podrías rellenarlos temporalmente
+    # df['Fecha Requerida'] = df['Fecha Requerida'].fillna(pd.Timestamp.now()) 
+
+    # Estandarización de otras columnas
     if 'Enviado' not in df.columns: df.insert(0, 'Enviado', False)
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
     df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
@@ -149,3 +157,4 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
