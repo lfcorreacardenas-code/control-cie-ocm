@@ -1,11 +1,11 @@
 import streamlit as st
-import pd as pd
+import pandas as pd  # CORREGIDO: Era 'import pandas as pd'
 import plotly.express as px
 from datetime import date
 from streamlit_gsheets import GSheetsConnection
 import time
 
-# 1. Configuración de página y Estética
+# 1. Configuración de página y Estética de Alto Contraste
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
 def aplicar_estilos():
@@ -25,6 +25,7 @@ def aplicar_estilos():
             border-left: 6px solid #FF6B00 !important;
             border-radius: 10px;
             box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
+            padding: 15px;
         }
         section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
             color: #000000 !important; font-weight: bold !important;
@@ -37,11 +38,11 @@ def aplicar_estilos():
 
 aplicar_estilos()
 
-# --- CARGA DE DATOS CON CACHÉ (Para evitar Error 429) ---
+# --- CARGA DE DATOS CON CACHÉ INTELIGENTE ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-@st.cache_data(ttl=60) # Guarda los datos por 60 segundos antes de volver a preguntar a Google
-def cargar_datos():
+@st.cache_data(ttl=60) # Evita saturar a Google consultando solo cada 60 segundos
+def cargar_datos_seguro():
     return conn.read(ttl=0)
 
 def abreviar_analisis(texto):
@@ -65,22 +66,22 @@ def abreviar_analisis(texto):
     return texto
 
 try:
-    df_original = cargar_datos()
+    df_original = cargar_datos_seguro()
     df = df_original.copy()
 
-    # Estandarización
+    # Preparación de columnas
     if 'Enviado' not in df.columns: df.insert(0, 'Enviado', False)
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
     df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
     df['Recibido Laboratorio'] = pd.to_datetime(df['Recibido Laboratorio'], errors='coerce')
     df['Fecha Requerida'] = pd.to_datetime(df['Fecha Requerida'], errors='coerce')
 
-    # --- FILTROS ---
-    st.sidebar.header("🔍 Filtros")
+    # --- BARRA LATERAL ---
+    st.sidebar.header("🔍 Panel de Control")
     lista_clientes = ["TODOS"] + sorted(df['Cliente'].dropna().unique().tolist())
     filtro_cliente = st.sidebar.selectbox("Cliente:", lista_clientes)
     filtro_projob = st.sidebar.text_input("Buscar Projob:")
-    solo_pendientes = st.sidebar.checkbox("Ver solo pendientes")
+    solo_pendientes = st.sidebar.checkbox("Ocultar Enviados")
 
     if filtro_cliente != "TODOS": df = df[df['Cliente'] == filtro_cliente]
     if filtro_projob: df = df[df['Projob'].str.contains(filtro_projob, case=False, na=False)]
@@ -90,15 +91,15 @@ try:
     st.title("⚡ Monitoreo CIE - Control Estratégico")
     m1, m2, m3 = st.columns(3)
     m1.metric("Muestras Totales", len(df))
-    m2.metric("Pendientes", len(df[df['Enviado'] == False]))
-    m3.metric("Filtro Actual", filtro_cliente if filtro_cliente != "TODOS" else "Global")
+    m2.metric("Por Enviar", len(df[df['Enviado'] == False]))
+    m3.metric("Filtro", filtro_cliente if filtro_cliente != "TODOS" else "Global")
 
     # --- GRÁFICOS ---
     st.write("---")
     c1, c2 = st.columns([1.5, 1])
     
     with c1:
-        st.subheader("📊 Volumen de Muestras")
+        st.subheader("📊 Volumen por Cliente")
         eje_y = 'Det_Resumen' if filtro_cliente != "TODOS" else 'Cliente'
         data_bar = df[eje_y].value_counts().reset_index().head(10)
         fig_bar = px.bar(data_bar, x='count', y=eje_y, orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white")
@@ -110,13 +111,15 @@ try:
         st.subheader("🔬 Mix de Análisis")
         data_pie = df['Det_Resumen'].value_counts().reset_index()
         fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888'], template="plotly_white")
-        fig_pie.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)',
-                             legend=dict(font=dict(color="white"), bgcolor="#262730", bordercolor="#FF6B00", borderwidth=2))
+        fig_pie.update_layout(
+            font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)',
+            legend=dict(font=dict(color="white"), bgcolor="#262730", bordercolor="#FF6B00", borderwidth=2)
+        )
         st.plotly_chart(fig_pie, use_container_width=True)
 
     # --- TABLA Y GESTIÓN ---
     st.write("---")
-    st.subheader("📋 Gestión de Muestras y Fechas")
+    st.subheader("📋 Gestión de Muestras y Plazos")
     
     df_ver = df.copy()
     df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio'].dt.strftime('%d-%m-%Y')
@@ -126,22 +129,23 @@ try:
         df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
         use_container_width=True, hide_index=True,
         column_config={"Enviado": st.column_config.CheckboxColumn("Enviado ✅")},
-        key="editor_v8"
+        key="editor_v10"
     )
 
-    # Botones de Acción con protección ante saturación
-    if st.button("💾 Guardar Cambios"):
-        try:
-            for i, row in res.iterrows():
-                df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
-            
-            conn.update(data=df_original.drop(columns=['Det_Resumen'], errors='ignore'))
-            st.cache_data.clear() # Limpia la caché para ver los cambios reflejados
-            st.success("¡Datos guardados correctamente!")
-            time.sleep(1)
-            st.rerun()
-        except Exception as e:
-            st.error("Google está procesando muchas solicitudes. Por favor, espera 10 segundos y vuelve a intentarlo.")
+    # Botones con protección de cuota
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("💾 Guardar"):
+            try:
+                for i, row in res.iterrows():
+                    df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
+                conn.update(data=df_original.drop(columns=['Det_Resumen'], errors='ignore'))
+                st.cache_data.clear()
+                st.toast("✅ Cambios guardados")
+                time.sleep(1)
+                st.rerun()
+            except Exception:
+                st.warning("Google está saturado. Reintenta en 15 segundos.")
 
 except Exception as e:
-    st.error(f"Error de conexión: {e}")
+    st.error(f"Error de sistema: {e}")
