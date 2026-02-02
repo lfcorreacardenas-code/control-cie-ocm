@@ -136,7 +136,7 @@ try:
         
         # AJUSTE DE VISIBILIDAD DE EJES
         fig_bar.update_layout(
-            font=dict(color="#000000", size=14, family="Arial Black"), # Letras negras y gruesas
+            font=dict(color="#000000", size=14, family="Arial"), # Letras negras y gruesas
             paper_bgcolor='rgba(0,0,0,0)', 
             plot_bgcolor='rgba(0,0,0,0)',
             xaxis=dict(tickfont=dict(color='black', size=12), title_font=dict(color='black')),
@@ -189,6 +189,7 @@ try:
 
 except Exception as e:
     st.error(f"Se detectó un inconveniente: {e}")
+
 
 
 
