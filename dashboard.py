@@ -93,7 +93,7 @@ try:
     m2.metric("Pendientes", len(df[df['Enviado'] == False]))
     m3.metric("Filtro Actual", filtro_cliente if filtro_cliente != "TODOS" else "Global")
 
-    # --- GRÁFICOS (REINTEGRADO EL DE TORTA) ---
+    # --- GRÁFICOS CORREGIDOS (NEGRO NORMAL) ---
     st.write("---")
     c1, c2 = st.columns([1.5, 1])
     
@@ -104,14 +104,17 @@ try:
         
         fig_bar = px.bar(data_bar, x='count', y=eje_y, orientation='h', 
                          color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white")
+        
         fig_bar.update_layout(
-            font=dict(color="black", size=12), 
+            font=dict(color="#000000", size=12), # Negro normal global
             paper_bgcolor='rgba(0,0,0,0)', 
             plot_bgcolor='rgba(0,0,0,0)',
-            yaxis={'categoryorder':'total ascending'}
+            margin=dict(l=150) # Espacio para nombres largos de clientes
         )
-        # Forzar color negro en nombres de clientes
-        fig_bar.update_yaxes(tickfont=dict(color="black"))
+        # Forzar color negro en las etiquetas de los clientes (eje Y)
+        fig_bar.update_yaxes(tickfont=dict(color="#000000", size=11, family="Arial"))
+        fig_bar.update_xaxes(tickfont=dict(color="#000000"))
+        
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with c2:
@@ -119,14 +122,22 @@ try:
         data_pie = df['Det_Resumen'].value_counts().reset_index()
         
         fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', 
-                         color_discrete_sequence=['#FF6B00', '#1A1A1A', '#555555', '#999999'],
+                         color_discrete_sequence=['#FF6B00', '#333333', '#666666', '#999999'],
                          template="plotly_white")
+        
         fig_pie.update_layout(
-            font=dict(color="black", size=12),
-            paper_bgcolor='rgba(0,0,0,0)'
+            # Negro normal para la leyenda y etiquetas
+            font=dict(color="#000000", size=12, family="Arial"),
+            paper_bgcolor='rgba(0,0,0,0)',
+            showlegend=True,
+            legend=dict(
+                font=dict(color="#000000", size=11), # Forzar negro en leyenda
+                bgcolor="rgba(255, 255, 255, 0.6)", # Fondo blanco sutil para legibilidad
+                bordercolor="#DDDDDD",
+                borderwidth=1
+            )
         )
-        # Forzar texto negro en la leyenda
-        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_pie.update_traces(textposition='inside', textinfo='percent', textfont=dict(color="white"))
         st.plotly_chart(fig_pie, use_container_width=True)
 
     # --- TABLA Y ACCIONES ---
@@ -161,3 +172,4 @@ try:
 
 except Exception as e:
     st.error(f"Error en tablero: {e}")
+
