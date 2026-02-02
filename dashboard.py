@@ -4,7 +4,7 @@ import plotly.express as px
 from datetime import date
 from streamlit_gsheets import GSheetsConnection
 
-# 1. Configuración y Estética
+# 1. Configuración de página
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
 def aplicar_estilos():
@@ -17,19 +17,21 @@ def aplicar_estilos():
             background-size: cover;
             background-attachment: fixed;
         }
+        /* Texto de métricas y etiquetas en negro puro */
         [data-testid="stMetricValue"] { color: #000000 !important; font-weight: bold !important; }
-        [data-testid="stMetricLabel"] { color: #1A1A1A !important; font-weight: 700 !important; }
+        [data-testid="stMetricLabel"] { color: #000000 !important; font-weight: 700 !important; }
+        
         div[data-testid="stMetric"] {
-            background-color: white;
-            border-left: 6px solid #FF6B00;
+            background-color: white !important;
+            border-left: 6px solid #FF6B00 !important;
             border-radius: 10px;
             box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
         }
-        /* Forzar texto negro en Sidebar */
+        /* Sidebar con texto negro */
         section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
             color: #000000 !important; font-weight: bold !important;
         }
-        h1, h2, h3 { color: #CC5500 !important; }
+        h1, h2, h3 { color: #CC5500 !important; font-weight: 800 !important; }
         </style>
         """,
         unsafe_allow_html=True
@@ -64,77 +66,98 @@ try:
     df_original = conn.read(ttl=0)
     df = df_original.copy()
 
-    # Limpieza
+    # Estandarización
     if 'Enviado' not in df.columns: df.insert(0, 'Enviado', False)
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
-    df['Determinaciones_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
+    df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
 
     # --- BARRA LATERAL (FILTROS) ---
-    st.sidebar.header("🔍 Filtros de Búsqueda")
-    
-    filtro_cliente = st.sidebar.selectbox("Filtrar por Cliente:", ["TODOS"] + sorted(df['Cliente'].unique().tolist()))
-    filtro_analisis = st.sidebar.text_input("Buscar por Análisis (ej: FQ, PCB):")
+    st.sidebar.header("🔍 Filtros")
+    filtro_cliente = st.sidebar.selectbox("Cliente:", ["TODOS"] + sorted(df['Cliente'].dropna().unique().tolist()))
+    filtro_analisis = st.sidebar.text_input("Buscar Análisis (ej: FQ):")
     solo_pendientes = st.sidebar.checkbox("Ver solo pendientes")
 
-    # Aplicar Filtros
+    # Aplicación de filtros al DataFrame de la vista
     if filtro_cliente != "TODOS":
         df = df[df['Cliente'] == filtro_cliente]
     if filtro_analisis:
-        df = df[df['Determinaciones_Resumen'].str.contains(filtro_analisis, case=False, na=False)]
+        df = df[df['Det_Resumen'].str.contains(filtro_analisis, case=False, na=False)]
     if solo_pendientes:
         df = df[df['Enviado'] == False]
 
-    # --- CUERPO PRINCIPAL ---
-    st.title("⚡ Monitoreo CIE - Gestión Estratégica")
+    # --- MÉTRICAS ---
+    st.title("⚡ Monitoreo CIE - Control Estratégico")
     
-    # Métricas
     m1, m2, m3 = st.columns(3)
     m1.metric("Muestras en Vista", len(df))
     m2.metric("Pendientes", len(df[df['Enviado'] == False]))
-    m3.metric("Cliente Seleccionado", filtro_cliente if filtro_cliente != "TODOS" else "Global")
+    m3.metric("Filtro Actual", filtro_cliente if filtro_cliente != "TODOS" else "Global")
 
-    # Gráficos
+    # --- GRÁFICOS (REINTEGRADO EL DE TORTA) ---
     st.write("---")
     c1, c2 = st.columns([1.5, 1])
     
     with c1:
         st.subheader("📊 Volumen de Muestras")
-        eje_y = 'Determinaciones_Resumen' if filtro_cliente != "TODOS" else 'Cliente'
-        data_chart = df[eje_y].value_counts().reset_index().head(10)
+        eje_y = 'Det_Resumen' if filtro_cliente != "TODOS" else 'Cliente'
+        data_bar = df[eje_y].value_counts().reset_index().head(10)
         
-        fig = px.bar(data_chart, x='count', y=eje_y, orientation='h', 
-                     color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white")
-        fig.update_layout(font=dict(color="black", size=12), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-        fig.update_yaxes(tickfont=dict(color="black", size=11))
-        st.plotly_chart(fig, use_container_width=True)
+        fig_bar = px.bar(data_bar, x='count', y=eje_y, orientation='h', 
+                         color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white")
+        fig_bar.update_layout(
+            font=dict(color="black", size=12), 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(0,0,0,0)',
+            yaxis={'categoryorder':'total ascending'}
+        )
+        # Forzar color negro en nombres de clientes
+        fig_bar.update_yaxes(tickfont=dict(color="black"))
+        st.plotly_chart(fig_bar, use_container_width=True)
 
-    # --- SECCIÓN DE TABLA Y ACCIONES ---
+    with c2:
+        st.subheader("🔬 Mix de Análisis")
+        data_pie = df['Det_Resumen'].value_counts().reset_index()
+        
+        fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', 
+                         color_discrete_sequence=['#FF6B00', '#1A1A1A', '#555555', '#999999'],
+                         template="plotly_white")
+        fig_pie.update_layout(
+            font=dict(color="black", size=12),
+            paper_bgcolor='rgba(0,0,0,0)'
+        )
+        # Forzar texto negro en la leyenda
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+    # --- TABLA Y ACCIONES ---
     st.write("---")
-    st.subheader("📋 Panel de Control")
+    st.subheader("📋 Gestión de Envío")
     
-    col_btn1, col_btn2 = st.columns([1, 4])
-    with col_btn1:
-        if st.button("✅ Marcar TODO como Enviado"):
+    col_a, col_b = st.columns([1, 4])
+    with col_a:
+        if st.button("✅ Marcar VISTA como Enviado"):
             df_original.loc[df.index, 'Enviado'] = True
-            conn.update(data=df_original.drop(columns=['Determinaciones_Resumen'], errors='ignore'))
+            conn.update(data=df_original.drop(columns=['Det_Resumen'], errors='ignore'))
             st.rerun()
 
-    # Editor de tabla
-    df_display = df[['Enviado', 'Projob', 'Cliente', 'Determinaciones_Resumen']].copy()
+    # Editor de datos
     res = st.data_editor(
-        df_display,
+        df[['Enviado', 'Projob', 'Cliente', 'Det_Resumen']],
         use_container_width=True,
         hide_index=True,
-        column_config={"Enviado": st.column_config.CheckboxColumn("Enviado ✅")},
-        key="editor_final"
+        column_config={
+            "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
+            "Det_Resumen": "Análisis Simplificado"
+        },
+        key="editor_v6"
     )
 
-    if st.button("💾 Guardar Cambios Individuales"):
+    if st.button("💾 Guardar Cambios"):
         for i, row in res.iterrows():
             df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
-        conn.update(data=df_original.drop(columns=['Determinaciones_Resumen'], errors='ignore'))
-        st.toast("Base de datos sincronizada")
+        conn.update(data=df_original.drop(columns=['Det_Resumen'], errors='ignore'))
+        st.toast("Actualizado")
         st.rerun()
 
 except Exception as e:
-    st.error(f"Error: {e}")
+    st.error(f"Error en tablero: {e}")
