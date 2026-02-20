@@ -53,6 +53,7 @@ def abreviar_analisis(texto):
         "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
         "Bifenilos Policlorados": "PCB",
         "Color ASTM": "FQ",
+        "Color por Método Automático Triestimulo": "FQ",
         "Gases Disueltos en Aceite Aislante Eléctrico por GC-Headspace": "Gases Disueltos",
         "Elementos en Aceites Dieléctricos por ICP-AES": "Metales",
         "Compuestos Furanos en Líquidos Aislantes Eléctricos (HPLC)": "Furanos",
@@ -159,5 +160,6 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
 
 
