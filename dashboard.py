@@ -154,7 +154,7 @@ try:
     df_ver = df.copy()
     df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio'].dt.strftime('%d-%m-%Y')
     df_ver['F. Requerida'] = df_ver['Fecha Requerida'].dt.strftime('%d-%m-%Y')
-    df_ver['Reporte'] = df_ver['Projob'].apply(generar_url_drive)
+    #df_ver['Reporte'] = df_ver['Projob'].apply(generar_url_drive)
 
     res = st.data_editor(
         df_ver[['Enviado', 'Projob', 'Reporte', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
@@ -177,4 +177,5 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
