@@ -106,10 +106,10 @@ try:
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
     df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
 
-     URL Drive (Recursiva en Carpeta 2026)
-    def generar_url_drive(projob):
-        if pd.isna(projob): return None
-        return f"https://drive.google.com/drive/u/0/search?q={projob[:11]} parent:2026&sort=7&direction=d"
+    # URL Drive (Recursiva en Carpeta 2026)
+    #def generar_url_drive(projob):
+    #    if pd.isna(projob): return None
+    #    return f"https://drive.google.com/drive/u/0/search?q={projob[:11]} parent:2026&sort=7&direction=d"
 
     # --- BARRA LATERAL ---
     st.sidebar.header("🔍 Panel de Control")
@@ -177,6 +177,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
 
 
