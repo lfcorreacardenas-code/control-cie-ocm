@@ -80,6 +80,9 @@ def abreviar_analisis(texto):
     mapeo = {
         "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Contenido de Inhibidor",
         "Conteo de Partículas en Aceite Mineral Aislante por el Contador de Partículas Automático": "Conteo de Particulas",
+        "Gases Disueltos en Aceite Aislante Eléctrico por GC-Headspace": "Gases Disueltos",
+        "Elementos en Aceites Dieléctricos por ICP-AES": "Metales",
+        "Color por Método Automático Triestimulo": "FQ",
         "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
         "Bifenilos Policlorados": "PCB",
         "Color ASTM": "FQ",
@@ -177,6 +180,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
 
 
