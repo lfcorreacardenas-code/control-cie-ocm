@@ -106,10 +106,10 @@ try:
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
     df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
 
-    # URL Drive (Recursiva en Carpeta 2026)
-    #def generar_url_drive(projob):
-    #    if pd.isna(projob): return None
-    #    return f"https://drive.google.com/drive/u/0/search?q={projob[:11]} parent:2026&sort=7&direction=d"
+     URL Drive (Recursiva en Carpeta 2026)
+    def generar_url_drive(projob):
+        if pd.isna(projob): return None
+        return f"https://drive.google.com/drive/u/0/search?q={projob[:11]} parent:2026&sort=7&direction=d"
 
     # --- BARRA LATERAL ---
     st.sidebar.header("🔍 Panel de Control")
@@ -157,11 +157,11 @@ try:
     #df_ver['Reporte'] = df_ver['Projob'].apply(generar_url_drive)
 
     res = st.data_editor(
-        df_ver[['Enviado', 'Projob', 'Reporte', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
+        df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
         use_container_width=True, hide_index=True,
         column_config={
             "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
-            "Reporte": st.column_config.LinkColumn("PDF 📄", display_text="Ver Reporte"),
+            #"Reporte": st.column_config.LinkColumn("PDF 📄", display_text="Ver Reporte"),
         },
         key="editor_final_seguro"
     )
@@ -177,5 +177,6 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
 
