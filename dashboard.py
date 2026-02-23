@@ -5,6 +5,44 @@ from datetime import date
 from streamlit_gsheets import GSheetsConnection
 import time
 
+# --- CONFIGURACIÓN DE SEGURIDAD ---
+def check_password():
+    """Devuelve True si el usuario introdujo la contraseña correcta."""
+
+    def password_entered():
+        """Verifica si la contraseña introducida es correcta."""
+        if (
+            st.session_state["username"] == st.secrets["usuarios"]["admin_user"]
+            and st.session_state["password"] == st.secrets["usuarios"]["admin_password"]
+        ):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # No guardar la contraseña
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # Primera vez, mostrar formulario de login
+        st.title("🔐 Acceso al Portal CIE-OCM")
+        st.text_input("Usuario", on_change=password_entered, key="username")
+        st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
+        return False
+    elif not st.session_state["password_correct"]:
+        # Contraseña incorrecta, mostrar formulario de nuevo
+        st.title("🔐 Acceso al Portal CIE-OCM")
+        st.text_input("Usuario", on_change=password_entered, key="username")
+        st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
+        st.error("😕 Usuario o contraseña incorrectos")
+        return False
+    else:
+        # Contraseña correcta
+        return True
+
+# --- VALIDACIÓN INICIAL ---
+if check_password():
+    # AQUÍ VA TODO EL RESTO DE TU CÓDIGO (aplicar_estilos, carga de datos, gráficos, etc.)
+    st.sidebar.success("Sesión iniciada correctamente")
+
 # 1. Configuración de página y Estética de Alto Contraste
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
@@ -160,6 +198,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
 
 
 
