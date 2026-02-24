@@ -141,7 +141,7 @@ try:
         st.subheader("📊 Volumen por Cliente")
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
         fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white")
-        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0.5)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with g2:
@@ -180,6 +180,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
 
 
