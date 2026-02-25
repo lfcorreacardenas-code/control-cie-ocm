@@ -137,7 +137,7 @@ try:
     # Gráficos
     # --- SECCIÓN DE GRÁFICOS OPTIMIZADA ---
     st.write("---")
-    g1, g2 = st.columns([1.2, 1])
+    g1, g2 = st.columns([1, 1])
     with g1:
         st.subheader("📊 Volumen por Cliente")
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
@@ -181,6 +181,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de conexión: {e}")
+
 
 
 
