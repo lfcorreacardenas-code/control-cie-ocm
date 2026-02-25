@@ -7,25 +7,22 @@ import time
 # --- 1. FUNCIÓN DE AUTENTICACIÓN (EL MURO) ---
 def check_password():
     def password_entered():
-        # Verificamos contra los Secrets de Streamlit
         if (
             st.session_state["username"] == st.secrets["usuarios"]["admin_user"]
             and st.session_state["password"] == st.secrets["usuarios"]["admin_password"]
         ):
             st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Seguridad: borrar password de memoria
+            del st.session_state["password"]
             del st.session_state["username"]
         else:
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        # PANTALLA DE LOGIN LIMPIA
         st.title("🔐 Acceso Privado CIE-OCM")
         st.text_input("Usuario", on_change=password_entered, key="username")
         st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
         return False
     elif not st.session_state["password_correct"]:
-        # LOGIN FALLIDO
         st.title("🔐 Acceso Privado CIE-OCM")
         st.text_input("Usuario", on_change=password_entered, key="username")
         st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
@@ -33,13 +30,10 @@ def check_password():
         return False
     return True
 
-# --- 2. VALIDACIÓN DE ACCESO ---
 if not check_password():
-    st.stop()  # SI NO HAY LOGIN, SE DETIENE AQUÍ. No se ejecuta nada más.
+    st.stop()
 
-# --- 3. TODO EL PORTAL (SOLO SE VE SI EL LOGIN ES EXITOSO) ---
-
-# Configuración de página y estilos
+# --- 3. CONFIGURACIÓN Y ESTILOS ---
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
 def aplicar_estilos():
@@ -68,7 +62,7 @@ def aplicar_estilos():
 
 aplicar_estilos()
 
-# --- CARGA DE DATOS CON CACHÉ ---
+# --- CARGA DE DATOS ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 @st.cache_data(ttl=60)
@@ -109,40 +103,42 @@ try:
     df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
     df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
 
-    # URL Drive (Recursiva en Carpeta 2026)
-    #def generar_url_drive(projob):
-    #    if pd.isna(projob): return None
-    #    return f"https://drive.google.com/drive/u/0/search?q={projob[:11]} parent:2026&sort=7&direction=d"
-
-    # --- BARRA LATERAL ---
+    # --- BARRA LATERAL (FILTROS) ---
     st.sidebar.header("🔍 Panel de Control")
+    
     lista_clientes = ["TODOS"] + sorted(df['Cliente'].dropna().unique().tolist())
     filtro_cliente = st.sidebar.selectbox("Cliente:", lista_clientes)
+    
+    # NUEVO FILTRO: Checkbox para no enviados
+    solo_no_enviados = st.sidebar.checkbox("Mostrar solo no enviados", value=False)
     
     if st.sidebar.button("🚪 Cerrar Sesión"):
         del st.session_state["password_correct"]
         st.rerun()
 
+    # Aplicar filtros al DataFrame
     if filtro_cliente != "TODOS":
         df = df[df['Cliente'] == filtro_cliente]
+    
+    if solo_no_enviados:
+        df = df[df['Enviado'] == False]
 
     # --- CUERPO DEL PORTAL ---
     st.title("⚡ Monitoreo CIE - Control Estratégico")
     
     m1, m2, m3 = st.columns(3)
-    m1.metric("Muestras Totales", len(df))
-    m2.metric("Pendientes", len(df[df['Enviado'] == False]))
+    m1.metric("Muestras en Vista", len(df))
+    m2.metric("Pendientes Reales", len(df[df['Enviado'] == False]))
     m3.metric("Filtro Actual", filtro_cliente)
 
-    # Gráficos
-    # --- SECCIÓN DE GRÁFICOS OPTIMIZADA ---
+    # --- SECCIÓN DE GRÁFICOS ---
     st.write("---")
     g1, g2 = st.columns([1, 1])
     with g1:
         st.subheader("📊 Volumen por Cliente")
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
-        fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white",height=400)
-        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0.7)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(l=150, r=20, t=30, b=30),xaxis_title=None,yaxis_title=None)
+        fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white", height=400)
+        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=150, r=20, t=30, b=30), xaxis_title=None, yaxis_title=None)
         fig_bar.update_yaxes(tickmode='linear', automargin=True)
         st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -153,19 +149,18 @@ try:
         fig_pie.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', 
                              legend=dict(font=dict(color="white"), bgcolor="#262730", bordercolor="#FF6B00", borderwidth=2))
         st.plotly_chart(fig_pie, use_container_width=True)
-    # Tabla
+
+    # --- TABLA ---
     st.write("---")
     df_ver = df.copy()
     df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio'].dt.strftime('%d-%m-%Y')
     df_ver['F. Requerida'] = df_ver['Fecha Requerida'].dt.strftime('%d-%m-%Y')
-    #df_ver['Reporte'] = df_ver['Projob'].apply(generar_url_drive)
 
     res = st.data_editor(
         df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
         use_container_width=True, hide_index=True,
         column_config={
             "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
-            #"Reporte": st.column_config.LinkColumn("PDF 📄", display_text="Ver Reporte"),
         },
         key="editor_final_seguro"
     )
@@ -180,14 +175,4 @@ try:
         st.rerun()
 
 except Exception as e:
-    st.error(f"Error de conexión: {e}")
-
-
-
-
-
-
-
-
-
-
+    st.error(f"Error de sistema: {e}")
