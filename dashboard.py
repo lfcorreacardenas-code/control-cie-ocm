@@ -80,6 +80,7 @@ def abreviar_analisis(texto):
         "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
         "Bifenilos Policlorados": "PCB",
         "Color ASTM": "FQ",
+        "Densidad, Densidad Relativa, API de Productos de Petroleo Liquido por Hidrometro(Densidad Relativa (SG) a 15.0/15.0 °C)": "FQ",
         "Compuestos Furanos en Líquidos Aislantes Eléctricos (HPLC)": "Furanos",
         "Número de Acidez por Titulación - Indicación Color": "FQ",
         "Rigidez Dieléctrica del Aceite": "FQ",
@@ -176,5 +177,6 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
 
 
