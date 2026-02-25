@@ -110,7 +110,7 @@ try:
     filtro_cliente = st.sidebar.selectbox("Cliente:", lista_clientes)
     
     # NUEVO FILTRO: Checkbox para no enviados
-    solo_no_enviados = st.sidebar.checkbox("Mostrar solo no enviados", value=False)
+    solo_no_enviados = st.sidebar.checkbox("Ver solo no enviados", value=False)
     
     if st.sidebar.button("🚪 Cerrar Sesión"):
         del st.session_state["password_correct"]
@@ -138,7 +138,7 @@ try:
         st.subheader("📊 Volumen por Cliente")
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
         fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white", height=400)
-        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=150, r=20, t=30, b=30), xaxis_title=None, yaxis_title=None)
+        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0.7)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=150, r=20, t=30, b=30), xaxis_title=None, yaxis_title=None)
         fig_bar.update_yaxes(tickmode='linear', automargin=True)
         st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -176,3 +176,5 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
+
