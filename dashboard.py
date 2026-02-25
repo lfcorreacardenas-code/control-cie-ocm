@@ -137,64 +137,21 @@ try:
     # Gráficos
     # --- SECCIÓN DE GRÁFICOS OPTIMIZADA ---
     st.write("---")
-    # Cambiamos el ratio a [1.2, 1] para que no haya tanta diferencia de ancho
     g1, g2 = st.columns([1.2, 1])
-    
     with g1:
         st.subheader("📊 Volumen por Cliente")
-        # Limitamos a los TOP 10 clientes para que la lista no sea infinita
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
-        
-        fig_bar = px.bar(
-            data_bar, 
-            x='count', 
-            y='Cliente', 
-            orientation='h', 
-            color_discrete_sequence=['#FF6B00'], 
-            text_auto=True, 
-            template="plotly_white",
-            height=400  # <--- ALTURA FIJA: Evita que el gráfico crezca solo
-        )
-        
-        fig_bar.update_layout(
-            font=dict(color="black", size=10),
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            # Ajustamos el margen izquierdo (l=150) para nombres largos
-            margin=dict(l=150, r=20, t=30, b=30),
-            xaxis_title=None,
-            yaxis_title=None
-        )
-        # Hacemos que los nombres largos se corten con puntos suspensivos si exceden el espacio
+        fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white",height=400)
+        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(l=150, r=20, t=30, b=30))
         fig_bar.update_yaxes(tickmode='linear', automargin=True)
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with g2:
         st.subheader("🔬 Mix de Análisis")
         data_pie = df['Det_Resumen'].value_counts().reset_index()
-        
-        fig_pie = px.pie(
-            data_pie, 
-            values='count', 
-            names='Det_Resumen', 
-            color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888'],
-            height=400 # <--- MISMA ALTURA que el de barras para simetría
-        )
-        
-        fig_pie.update_layout(
-            font=dict(color="black"),
-            paper_bgcolor='rgba(0,0,0,0.5)',
-            # Quitamos los márgenes de la torta para que use todo su cuadro
-            margin=dict(t=0, b=0, l=0, r=0),
-            legend=dict(
-                orientation="h", # Leyenda horizontal abajo para ganar espacio
-                yanchor="bottom",
-                y=-0.2,
-                xanchor="center",
-                x=0.5,
-                font=dict(color="black", size=10)
-            )
-        )
+        fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', color_discrete_sequence=['#FF6B00', '#262730', '#555555'], template="plotly_white")
+        fig_pie.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', 
+                             legend=dict(font=dict(color="white"), bgcolor="#262730", bordercolor="#FF6B00", borderwidth=2))
         st.plotly_chart(fig_pie, use_container_width=True)
     # Tabla
     st.write("---")
