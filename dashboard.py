@@ -135,7 +135,7 @@ try:
 
     # --- SECCIÓN DE GRÁFICOS ---
     st.write("---")
-    g1, g2 = st.columns([0.8, 1])
+    g1, g2 = st.columns([0.9, 1])
     with g1:
         st.subheader("📊 Volumen por Cliente")
         data_bar = df['Cliente'].value_counts().reset_index().head(10)
@@ -178,6 +178,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
 
 
 
