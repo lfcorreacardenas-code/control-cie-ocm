@@ -81,6 +81,7 @@ def abreviar_analisis(texto):
         "Bifenilos Policlorados": "PCB",
         "Color ASTM": "FQ",
         "Densidad, Densidad Relativa, API de Productos de Petroleo Liquido por Hidrometro(Densidad Relativa (SG) a 15.0/15.0 °C)": "FQ",
+        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Frecuencia de Voltaje aplicado, 100C,Humedad, 100C,Temperatura sala, 100C,Tipo Celda Muestra, 100C,Voltaje Medio , 100C)": "FQ",
         "Compuestos Furanos en Líquidos Aislantes Eléctricos (HPLC)": "Furanos",
         "Número de Acidez por Titulación - Indicación Color": "FQ",
         "Rigidez Dieléctrica del Aceite": "FQ",
@@ -177,6 +178,7 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
 
 
 
