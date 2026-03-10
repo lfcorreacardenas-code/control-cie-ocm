@@ -152,7 +152,7 @@ try:
                          template="plotly_white", height=400)
         
         fig_bar.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
             margin=dict(l=150, r=20, t=10, b=10),
             xaxis_title="Número de Muestras", yaxis_title=None,
             legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
@@ -194,3 +194,4 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
+
