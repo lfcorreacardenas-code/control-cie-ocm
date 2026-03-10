@@ -4,7 +4,7 @@ import plotly.express as px
 from streamlit_gsheets import GSheetsConnection
 import time
 
-# --- 1. FUNCIÓN DE AUTENTICACIÓN (EL MURO) ---
+# --- 1. FUNCIÓN DE AUTENTICACIÓN ---
 def check_password():
     def password_entered():
         if (
@@ -33,7 +33,7 @@ def check_password():
 if not check_password():
     st.stop()
 
-# --- 3. CONFIGURACIÓN Y ESTILOS ---
+# --- 2. CONFIGURACIÓN Y ESTILOS ---
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
 def aplicar_estilos():
@@ -62,7 +62,7 @@ def aplicar_estilos():
 
 aplicar_estilos()
 
-# --- CARGA DE DATOS ---
+# --- 3. CARGA Y PREPARACIÓN DE DATOS ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 @st.cache_data(ttl=60)
@@ -72,23 +72,20 @@ def cargar_datos():
 def abreviar_analisis(texto):
     if not isinstance(texto, str): return texto
     mapeo = {
-        "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Contenido de Inhibidor",
-        "Conteo de Partículas en Aceite Mineral Aislante por el Contador de Partículas Automático": "Conteo de Particulas",
-        "Gases Disueltos en Aceite Aislante Eléctrico por GC-Headspace": "Gases Disueltos",
+        "2,6-di-tert-Butyl-p-Cresol and 2,6-di-tert-Butyl Phenol by IR Manual": "Inhibidor",
+        "Conteo de Partículas en Aceite Mineral Aislante": "Conteo Particulas",
+        "Gases Disueltos en Aceite Aislante Eléctrico": "Gases Disueltos",
         "Elementos en Aceites Dieléctricos por ICP-AES": "Metales",
-        "Color por Método Automático Triestimulo": "FQ",
-        "Densidad, densidad relativa y gravedad API de líquidas por densitómetro(Densidad a 15ºC)": "FQ",
         "Bifenilos Policlorados": "PCB",
-        "Color ASTM": "FQ",
-        "Densidad, Densidad Relativa, API de Productos de Petroleo Liquido por Hidrometro(Densidad Relativa (SG) a 15.0/15.0 °C)": "FQ",
-        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Frecuencia de Voltaje aplicado, 100C,Humedad, 100C,Temperatura sala, 100C,Tipo Celda Muestra, 100C,Voltaje Medio , 100C)": "FQ",
-        "Compuestos Furanos en Líquidos Aislantes Eléctricos (HPLC)": "Furanos",
-        "Número de Acidez por Titulación - Indicación Color": "FQ",
-        "Rigidez Dieléctrica del Aceite": "FQ",
-        "Exámen Visual de los Aceites Eléctricos Usados": "FQ",
-        "Tensión Interfacial -Método del Anillo": "FQ",
-        "Agua por Titulación Columetrica Karl Fischer": "FQ",
-        "Apariencia": "FQ"
+        "Compuestos Furanos": "Furanos",
+        "Karl Fischer": "FQ",
+        "Rigidez Dieléctrica": "FQ",
+        "Color": "FQ",
+        "Densidad": "FQ",
+        "Acidez": "FQ",
+        "Tensión Interfacial": "FQ",
+        "Apariencia": "FQ",
+        "Exámen Visual": "FQ"
     }
     for largo, corto in mapeo.items():
         if largo in texto: return corto
@@ -96,81 +93,100 @@ def abreviar_analisis(texto):
 
 try:
     df_original = cargar_datos()
-    df = df_original.copy()
+    
+    # --- PROCESAMIENTO BASE ---
+    df_base = df_original.copy()
+    df_base['Recibido Laboratorio'] = pd.to_datetime(df_base['Recibido Laboratorio'], errors='coerce', dayfirst=True)
+    df_base['Fecha Requerida'] = pd.to_datetime(df_base['Fecha Requerida'], errors='coerce', dayfirst=True)
+    if 'Enviado' not in df_base.columns: df_base.insert(0, 'Enviado', False)
+    df_base['Enviado'] = df_base['Enviado'].fillna(False).astype(bool)
+    df_base['Estado'] = df_base['Enviado'].map({True: 'Enviado ✅', False: 'Pendiente ⏳'})
+    df_base['Det_Resumen'] = df_base['Determinaciones'].apply(abreviar_analisis)
 
-    # Procesamiento de Fechas y Columnas
-    df['Recibido Laboratorio'] = pd.to_datetime(df['Recibido Laboratorio'], errors='coerce', dayfirst=True)
-    df['Fecha Requerida'] = pd.to_datetime(df['Fecha Requerida'], errors='coerce', dayfirst=True)
-    if 'Enviado' not in df.columns: df.insert(0, 'Enviado', False)
-    df['Enviado'] = df['Enviado'].fillna(False).astype(bool)
-    df['Det_Resumen'] = df['Determinaciones'].apply(abreviar_analisis)
-
-    # --- BARRA LATERAL (FILTROS) ---
+    # --- FILTROS (BARRA LATERAL) ---
     st.sidebar.header("🔍 Panel de Control")
-    
-    lista_clientes = ["TODOS"] + sorted(df['Cliente'].dropna().unique().tolist())
+    lista_clientes = ["TODOS"] + sorted(df_base['Cliente'].dropna().unique().tolist())
     filtro_cliente = st.sidebar.selectbox("Cliente:", lista_clientes)
-    
-    # NUEVO FILTRO: Checkbox para no enviados
     solo_no_enviados = st.sidebar.checkbox("Ver solo no enviados", value=False)
     
     if st.sidebar.button("🚪 Cerrar Sesión"):
         del st.session_state["password_correct"]
         st.rerun()
 
-    # Aplicar filtros al DataFrame
+    # --- DATOS FILTRADOS PARA LA TABLA ---
+    df_vista = df_base.copy()
     if filtro_cliente != "TODOS":
-        df = df[df['Cliente'] == filtro_cliente]
-    
+        df_vista = df_vista[df_vista['Cliente'] == filtro_cliente]
     if solo_no_enviados:
-        df = df[df['Enviado'] == False]
+        df_vista = df_vista[df_vista['Enviado'] == False]
 
     # --- CUERPO DEL PORTAL ---
     st.title("⚡ Monitoreo CIE - Control Estratégico")
     
     m1, m2, m3 = st.columns(3)
-    m1.metric("Muestras en Vista", len(df))
-    m2.metric("Pendientes Reales", len(df[df['Enviado'] == False]))
+    m1.metric("Muestras en Vista", len(df_vista))
+    pendientes_totales = len(df_base[(df_base['Enviado'] == False) & 
+                                     ((df_base['Cliente'] == filtro_cliente) if filtro_cliente != "TODOS" else True)])
+    m2.metric("Pendientes Totales", pendientes_totales)
     m3.metric("Filtro Actual", filtro_cliente)
 
-    # --- SECCIÓN DE GRÁFICOS ---
+    # --- SECCIÓN DE GRÁFICOS (CONTEXTO GLOBAL) ---
     st.write("---")
-    g1, g2 = st.columns([0.9, 1])
+    st.markdown("### 📈 Dashboard Operativo Global")
+    g1, g2 = st.columns([1.2, 0.8])
+    
     with g1:
-        st.subheader("📊 Volumen por Cliente")
-        data_bar = df['Cliente'].value_counts().reset_index().head(10)
-        fig_bar = px.bar(data_bar, x='count', y='Cliente', orientation='h', color_discrete_sequence=['#FF6B00'], text_auto=True, template="plotly_white", height=400)
-        fig_bar.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0.7)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=150, r=20, t=30, b=30), xaxis_title=None, yaxis_title=None)
-        fig_bar.update_yaxes(tickmode='linear', automargin=True)
+        st.subheader("📊 Progreso por Cliente (Top 10)")
+        # Lógica para gráfico apilado:
+        # 1. Obtenemos el orden del top 10 basado en el TOTAL
+        top_10_names = df_base['Cliente'].value_counts().nlargest(10).index
+        df_plot_bar = df_base[df_base['Cliente'].isin(top_10_names)]
+        
+        # 2. Agrupamos por Cliente y Estado
+        data_bar = df_plot_bar.groupby(['Cliente', 'Estado']).size().reset_index(name='Cantidad')
+        
+        fig_bar = px.bar(data_bar, x='Cantidad', y='Cliente', color='Estado',
+                         orientation='h', 
+                         color_discrete_map={'Pendiente ⏳': '#FF6B00', 'Enviado ✅': '#555555'},
+                         category_orders={"Cliente": top_10_names.tolist()},
+                         template="plotly_white", height=400)
+        
+        fig_bar.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=150, r=20, t=10, b=10),
+            xaxis_title="Número de Muestras", yaxis_title=None,
+            legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with g2:
-        st.subheader("🔬 Mix de Análisis")
-        data_pie = df['Det_Resumen'].value_counts().reset_index()
-        fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', color_discrete_sequence=['#FF6B00', '#262730', '#555555'], template="plotly_white")
-        fig_pie.update_layout(font=dict(color="black"), paper_bgcolor='rgba(0,0,0,0)', 
-                             legend=dict(font=dict(color="white"), bgcolor="#262730", bordercolor="#FF6B00", borderwidth=2))
+        st.subheader("🔬 Mix Total de Ensayos")
+        data_pie = df_base['Det_Resumen'].value_counts().reset_index()
+        fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', 
+                         color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888'], 
+                         template="plotly_white", height=400)
+        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+        fig_pie.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # --- TABLA ---
+    # --- TABLA OPERATIVA ---
     st.write("---")
-    df_ver = df.copy()
+    st.subheader("📋 Gestión de Reportes")
+    df_ver = df_vista.copy()
     df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio'].dt.strftime('%d-%m-%Y')
     df_ver['F. Requerida'] = df_ver['Fecha Requerida'].dt.strftime('%d-%m-%Y')
 
     res = st.data_editor(
         df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
         use_container_width=True, hide_index=True,
-        column_config={
-            "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
-        },
+        column_config={"Enviado": st.column_config.CheckboxColumn("Enviado ✅")},
         key="editor_final_seguro"
     )
 
     if st.button("💾 Guardar Cambios"):
         for i, row in res.iterrows():
             df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
-        conn.update(data=df_original.drop(columns=['Det_Resumen'], errors='ignore'))
+        conn.update(data=df_original.drop(columns=['Det_Resumen', 'Estado'], errors='ignore'))
         st.cache_data.clear()
         st.success("¡Datos actualizados!")
         time.sleep(1)
@@ -178,9 +194,3 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
-
-
-
-
-
-
