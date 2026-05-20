@@ -4,36 +4,7 @@ import plotly.express as px
 from streamlit_gsheets import GSheetsConnection
 import time
 
-# --- 1. FUNCIÓN DE AUTENTICACIÓN ---
-def check_password():
-    def password_entered():
-        if (
-            st.session_state["username"] == st.secrets["usuarios"]["admin_user"]
-            and st.session_state["password"] == st.secrets["usuarios"]["admin_password"]
-        ):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-            del st.session_state["username"]
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        st.title("🔐 Acceso Privado CIE-OCM")
-        st.text_input("Usuario", on_change=password_entered, key="username")
-        st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        st.title("🔐 Acceso Privado CIE-OCM")
-        st.text_input("Usuario", on_change=password_entered, key="username")
-        st.text_input("Contraseña", type="password", on_change=password_entered, key="password")
-        st.error("❌ Usuario o contraseña incorrectos.")
-        return False
-    return True
-
-if not check_password():
-    st.stop()
-
-# --- 2. CONFIGURACIÓN Y ESTILOS ---
+# --- 1. CONFIGURACIÓN Y ESTILOS ---
 st.set_page_config(page_title="Portal CIE-OCM Pro", layout="wide")
 
 def aplicar_estilos():
@@ -62,7 +33,7 @@ def aplicar_estilos():
 
 aplicar_estilos()
 
-# --- 3. CARGA Y PREPARACIÓN DE DATOS ---
+# --- 2. CARGA Y PREPARACIÓN DE DATOS ---
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 @st.cache_data(ttl=60)
@@ -109,10 +80,6 @@ try:
     lista_clientes = ["TODOS"] + sorted(df_base['Cliente'].dropna().unique().tolist())
     filtro_cliente = st.sidebar.selectbox("Cliente:", lista_clientes)
     solo_no_enviados = st.sidebar.checkbox("Ver solo no enviados", value=False)
-    
-    if st.sidebar.button("🚪 Cerrar Sesión"):
-        del st.session_state["password_correct"]
-        st.rerun()
 
     # --- DATOS FILTRADOS PARA LA TABLA ---
     df_vista = df_base.copy()
@@ -138,12 +105,9 @@ try:
     
     with g1:
         st.subheader("📊 Progreso por Cliente (Top 10)")
-        # Lógica para gráfico apilado:
-        # 1. Obtenemos el orden del top 10 basado en el TOTAL
         top_10_names = df_base['Cliente'].value_counts().nlargest(10).index
         df_plot_bar = df_base[df_base['Cliente'].isin(top_10_names)]
         
-        # 2. Agrupamos por Cliente y Estado
         data_bar = df_plot_bar.groupby(['Cliente', 'Estado']).size().reset_index(name='Cantidad')
         
         fig_bar = px.bar(data_bar, x='Cantidad', y='Cliente', color='Estado',
@@ -195,5 +159,3 @@ try:
 
 except Exception as e:
     st.error(f"Error de sistema: {e}")
-
-
