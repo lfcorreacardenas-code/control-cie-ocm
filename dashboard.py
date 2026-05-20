@@ -49,6 +49,7 @@ def abreviar_analisis(texto):
         "Elementos en Aceites Dieléctricos por ICP-AES": "Metales",
         "Bifenilos Policlorados": "PCB",
         "Compuestos Furanos": "Furanos",
+        "Elementos por ICP-AES":"Metales",
         "Karl Fischer": "FQ",
         "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Frecuencia de Voltaje aplicado, 100C,Humedad, 100C,Temperatura sala, 100C,Tipo Celda Muestra, 100C,Voltaje Medio , 100C)": "FQ",
         "Rigidez Dieléctrica": "FQ",
