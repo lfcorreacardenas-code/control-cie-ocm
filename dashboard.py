@@ -68,12 +68,17 @@ def abreviar_analisis(texto):
 try:
     df_original = cargar_datos()
     
+    # --- CORRECCIÓN: Asegurar el tipo booleano en df_original desde el inicio ---
+    if 'Enviado' not in df_original.columns: 
+        df_original.insert(0, 'Enviado', False)
+    df_original['Enviado'] = df_original['Enviado'].fillna(False).astype(bool)
+    
     # --- PROCESAMIENTO BASE ---
     df_base = df_original.copy()
     df_base['Recibido Laboratorio'] = pd.to_datetime(df_base['Recibido Laboratorio'], errors='coerce', dayfirst=True)
     df_base['Fecha Requerida'] = pd.to_datetime(df_base['Fecha Requerida'], errors='coerce', dayfirst=True)
-    if 'Enviado' not in df_base.columns: df_base.insert(0, 'Enviado', False)
-    df_base['Enviado'] = df_base['Enviado'].fillna(False).astype(bool)
+    
+    # (Estas líneas ya no necesitan inicializar 'Enviado' porque lo heredan corregido de df_original)
     df_base['Estado'] = df_base['Enviado'].map({True: 'Enviado ✅', False: 'Pendiente ⏳'})
     df_base['Det_Resumen'] = df_base['Determinaciones'].apply(abreviar_analisis)
 
