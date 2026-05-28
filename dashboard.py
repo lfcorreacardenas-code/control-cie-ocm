@@ -141,17 +141,26 @@ try:
         fig_pie.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # --- TABLA OPERATIVA ---
+# --- TABLA OPERATIVA ---
     st.write("---")
     st.subheader("📋 Gestión de Reportes")
     df_ver = df_vista.copy()
-    df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio'].dt.strftime('%d-%m-%Y')
-    df_ver['F. Requerida'] = df_ver['Fecha Requerida'].dt.strftime('%d-%m-%Y')
+    
+    # CORRECCIÓN: Asignar las columnas de fecha sin transformarlas a string (.strftime)
+    df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio']
+    df_ver['F. Requerida'] = df_ver['Fecha Requerida']
 
     res = st.data_editor(
         df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
-        use_container_width=True, hide_index=True,
-        column_config={"Enviado": st.column_config.CheckboxColumn("Enviado ✅")},
+        use_container_width=True, 
+        hide_index=True,
+        column_config={
+            "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
+            
+            # CORRECCIÓN: Usar DateColumn y definir el formato de visualización aquí
+            "F. Ingreso": st.column_config.DateColumn("F. Ingreso", format="DD-MM-YYYY"),
+            "F. Requerida": st.column_config.DateColumn("F. Requerida", format="DD-MM-YYYY"),
+        },
         key="editor_final_seguro"
     )
 
