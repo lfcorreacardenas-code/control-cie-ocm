@@ -53,6 +53,8 @@ def abreviar_analisis(texto):
         "Karl Fischer": "FQ",
         "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Frecuencia de Voltaje aplicado, 100C,Humedad, 100C,Temperatura sala, 100C,Tipo Celda Muestra, 100C,Voltaje Medio , 100C)": "FQ",
         "Rigidez Dieléctrica": "FQ",
+        "Los sedimentos y lodos soluble en Servicio de edad aceites aislantes" : "Lodos y Sedimentos",
+        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Factor de Potencia a 25 °C,Frecuencia de Voltaje aplicado, 100C,Frecuencia de Voltaje aplicado, 25C,Humedad, 100C,Humedad, 25C,Temperatura sala, 100C,Temperatura sala, 25C,Tipo Celda Muestra, 100C,Tipo Celda Muestra, 25C,Voltaje Medio , 100C,Voltaje Medio , 25C)": "FQ",
         "Azufre Corrosivo en Aceites Eléctricos Aislantes":"FQ",
         "Color": "FQ",
         "Densidad": "FQ",
