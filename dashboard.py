@@ -140,7 +140,7 @@ try:
                          color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888'], 
                          template="plotly_white", height=400)
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        fig_pie.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=10, b=10, l=10, r=10))
+        fig_pie.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=1000, b=1000, l=1000, r=1000))
         st.plotly_chart(fig_pie, use_container_width=True)
 
     # --- NUEVO GRÁFICO: EVOLUCIÓN MENSUAL ---
