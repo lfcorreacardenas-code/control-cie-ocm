@@ -161,9 +161,9 @@ try:
         
         fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
                            template="plotly_white", height=380)
-        fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#262730'))
+        fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#eaecf0'))
         fig_line.update_layout(
-            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(234,236,240,1)',
+            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
             margin=dict(l=20, r=20, t=10, b=20),
             xaxis_title="Mes de Recepción", yaxis_title="Cantidad de Muestras"
         )
