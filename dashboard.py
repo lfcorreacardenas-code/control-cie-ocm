@@ -138,7 +138,7 @@ try:
         st.subheader("🔬 Mix Total de Ensayos")
         data_pie = df_base['Det_Resumen'].value_counts().reset_index()
         fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', 
-                         color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888'], 
+                         color_discrete_sequence=['#FF8000', '#262730', '#555555', '#aeaeae'], 
                          template="plotly_white", height=400)
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
         fig_pie.update_layout(font=dict(family="Arial"),showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
