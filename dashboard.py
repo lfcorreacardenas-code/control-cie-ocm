@@ -228,7 +228,13 @@ try:
 
     if st.button("💾 Guardar Cambios"):
         for i, row in res.iterrows():
+            # Esto guarda el check de enviado (ya lo tenías)
             df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
+            
+            # 💡 ESTA ES LA LÍNEA QUE DEBES AGREGAR:
+            df_original.loc[df_original['Projob'] == row['Projob'], 'Observaciones'] = row['Observaciones']
+            
+        # Ahora sí, conn.update enviará AMBOS datos a Google Sheets
         conn.update(data=df_original.drop(columns=['Det_Resumen', 'Estado'], errors='ignore'))
         st.cache_data.clear()
         st.success("¡Datos actualizados!")
