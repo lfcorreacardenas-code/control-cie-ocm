@@ -188,7 +188,7 @@ try:
                              template="plotly_white", height=380)
         
         fig_top_bar.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,1)',
             margin=dict(l=20, r=20, t=10, b=20),
             xaxis_title="Mes de Recepción", yaxis_title="Muestras por Cliente",
             legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
