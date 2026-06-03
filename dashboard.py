@@ -143,7 +143,28 @@ try:
         fig_pie.update_layout(showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
         st.plotly_chart(fig_pie, use_container_width=True)
 
-# --- TABLA OPERATIVA ---
+    # --- NUEVO GRÁFICO: EVOLUCIÓN MENSUAL ---
+    st.write("---")
+    st.subheader("📅 Evolución de Muestras por Mes")
+    
+    # Filtramos filas sin fecha y creamos una columna con el formato Año-Mes
+    df_timeline = df_base.dropna(subset=['Recibido Laboratorio']).copy()
+    df_timeline['Mes'] = df_timeline['Recibido Laboratorio'].dt.strftime('%Y-%m')
+    
+    # Agrupamos por mes para contar la cantidad de muestras
+    data_timeline = df_timeline.groupby('Mes').size().reset_index(name='Cantidad').sort_values('Mes')
+
+    fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
+                       template="plotly_white", height=350)
+    fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#262730'))
+    fig_line.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=20, r=20, t=20, b=20),
+        xaxis_title="Mes de Recepción", yaxis_title="Cantidad de Muestras"
+    )
+    st.plotly_chart(fig_line, use_container_width=True)
+
+    # --- TABLA OPERATIVA ---
     st.write("---")
     st.subheader("📋 Gestión de Reportes")
     df_ver = df_vista.copy()
