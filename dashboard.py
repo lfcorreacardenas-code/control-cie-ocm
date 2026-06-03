@@ -110,7 +110,7 @@ try:
     # --- SECCIÓN DE GRÁFICOS (CONTEXTO GLOBAL) ---
     st.write("---")
     st.markdown("### 📈 Dashboard Operativo Global")
-    g1, g2 = st.columns([1.2, 0.8])
+    g1, g2 = st.columns([1, 0.8])
     
     with g1:
         st.subheader("📊 Progreso por Cliente (Top 10)")
