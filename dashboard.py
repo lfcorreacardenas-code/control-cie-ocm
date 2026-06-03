@@ -121,7 +121,7 @@ try:
         
         fig_bar = px.bar(data_bar, x='Cantidad', y='Cliente', color='Estado',
                          orientation='h', 
-                         color_discrete_map={'Pendiente ⏳': '#FF6B00', 'Enviado ✅': '#555555'},
+                         color_discrete_map={'Pendiente ⏳': '#FF6B00', 'Enviado ✅': '#00ff80'},
                          category_orders={"Cliente": top_10_names.tolist()},
                          template="plotly_white", height=400)
         
