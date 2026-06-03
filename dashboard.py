@@ -146,7 +146,7 @@ try:
     # --- NUEVO GRÁFICO: EVOLUCIÓN MENSUAL ---
 # --- SECCIÓN: ANÁLISIS TEMPORAL Y CLIENTES TOP (GERENCIA) ---
     st.write("---")
-    st.markdown("### 📊 Análisis de Tendencias Mensuales para Gerencia")
+    st.markdown("### 📊 Análisis de Tendencias Mensuales")
     
     # 1. Preparación de datos de tiempo
     df_timeline = df_base.dropna(subset=['Recibido Laboratorio']).copy()
@@ -163,7 +163,7 @@ try:
                            template="plotly_white", height=380)
         fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#262730'))
         fig_line.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,1)',
             margin=dict(l=20, r=20, t=10, b=20),
             xaxis_title="Mes de Recepción", yaxis_title="Cantidad de Muestras"
         )
