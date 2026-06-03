@@ -144,8 +144,56 @@ try:
         st.plotly_chart(fig_pie, use_container_width=True)
 
     # --- NUEVO GRÁFICO: EVOLUCIÓN MENSUAL ---
+# --- SECCIÓN: ANÁLISIS TEMPORAL Y CLIENTES TOP (GERENCIA) ---
     st.write("---")
-    st.subheader("📅 Evolución de Muestras por Mes")
+    st.markdown("### 📊 Análisis de Tendencias Mensuales para Gerencia")
+    
+    # 1. Preparación de datos de tiempo
+    df_timeline = df_base.dropna(subset=['Recibido Laboratorio']).copy()
+    df_timeline['Mes'] = df_timeline['Recibido Laboratorio'].dt.strftime('%Y-%m')
+    
+    # Creamos dos columnas para una distribución limpia de los reportes temporales
+    gt1, gt2 = st.columns(2)
+    
+    with gt1:
+        st.subheader("📅 Evolución Total de Muestras")
+        data_timeline = df_timeline.groupby('Mes').size().reset_index(name='Cantidad').sort_values('Mes')
+        
+        fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
+                           template="plotly_white", height=380)
+        fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#262730'))
+        fig_line.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=10, b=20),
+            xaxis_title="Mes de Recepción", yaxis_title="Cantidad de Muestras"
+        )
+        st.plotly_chart(fig_line, use_container_width=True)
+        
+    with gt2:
+        st.subheader("🏆 Clientes Principales por Mes")
+        
+        # Identificamos los 5 clientes con mayor volumen histórico para no saturar el gráfico
+        top_5_clientes = df_base['Cliente'].value_counts().nlargest(5).index.tolist()
+        
+        # Filtramos los datos para incluir solo a estos clientes top
+        df_top_mes = df_timeline[df_timeline['Cliente'].isin(top_5_clientes)].copy()
+        
+        # Agrupamos por mes y cliente
+        data_top_mes = df_top_mes.groupby(['Mes', 'Cliente']).size().reset_index(name='Cantidad').sort_values('Mes')
+        
+        # Creamos el gráfico de barras apiladas (lo puedes cambiar a barmode='group' si prefieres barras paralelas)
+        fig_top_bar = px.bar(data_top_mes, x='Mes', y='Cantidad', color='Cliente',
+                             barmode='stack',
+                             color_discrete_sequence=['#FF6B00', '#262730', '#555555', '#888888', '#A9A9A9'],
+                             template="plotly_white", height=380)
+        
+        fig_top_bar.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=10, b=20),
+            xaxis_title="Mes de Recepción", yaxis_title="Muestras por Cliente",
+            legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
+        )
+        st.plotly_chart(fig_top_bar, use_container_width=True)
     
     # Filtramos filas sin fecha y creamos una columna con el formato Año-Mes
     df_timeline = df_base.dropna(subset=['Recibido Laboratorio']).copy()
