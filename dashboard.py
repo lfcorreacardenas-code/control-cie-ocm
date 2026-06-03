@@ -126,7 +126,7 @@ try:
                          template="plotly_white", height=400)
         
         fig_bar.update_layout(
-            font=dict(family="Courier New"),
+            font=dict(family="Aptos"),
             paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
             margin=dict(l=150, r=20, t=10, b=10),
             xaxis_title="Número de Muestras", yaxis_title=None,
