@@ -160,7 +160,7 @@ try:
         data_timeline = df_timeline.groupby('Mes').size().reset_index(name='Cantidad').sort_values('Mes')
         
         fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
-                           template="plotly_white", height=380)
+                           template="plotly_white", height=400)
         fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#eaecf0'))
         fig_line.update_layout(
             paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
@@ -185,7 +185,7 @@ try:
         fig_top_bar = px.bar(data_top_mes, x='Mes', y='Cantidad', color='Cliente',
                              barmode='stack',
                              color_discrete_sequence=['#FF8000', '#262730', '#f2f2f2', '#ff1111', '#a8bcab'],
-                             template="plotly_white", height=380)
+                             template="plotly_white", height=400)
         
         fig_top_bar.update_layout(
             paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,1)',
