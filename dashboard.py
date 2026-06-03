@@ -74,6 +74,11 @@ try:
     if 'Enviado' not in df_original.columns: 
         df_original.insert(0, 'Enviado', False)
     df_original['Enviado'] = df_original['Enviado'].fillna(False).astype(bool)
+
+    # 👈 AGREGAR ESTAS LÍNEAS PARA OBSERVACIONES
+    if 'Observaciones' not in df_original.columns:
+        df_original['Observaciones'] = ""
+    df_original['Observaciones'] = df_original['Observaciones'].fillna("").astype(str)
     
     # --- PROCESAMIENTO BASE ---
     df_base = df_original.copy()
@@ -206,15 +211,17 @@ try:
     df_ver['F. Requerida'] = df_ver['Fecha Requerida']
 
     res = st.data_editor(
-        df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida']],
+        # 👈 Se añade 'Observaciones' al final de la lista
+        df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida', 'Observaciones']],
         use_container_width=True, 
         hide_index=True,
         column_config={
             "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
-            
-            # CORRECCIÓN: Usar DateColumn y definir el formato de visualización aquí
             "F. Ingreso": st.column_config.DateColumn("F. Ingreso", format="DD-MM-YYYY"),
             "F. Requerida": st.column_config.DateColumn("F. Requerida", format="DD-MM-YYYY"),
+            
+            # 👈 NUEVA CONFIGURACIÓN PARA EL CUADRO DE TEXTO
+            "Observaciones": st.column_config.TextColumn("Observaciones", help="Escribe notas aquí", width="large"),
         },
         key="editor_final_seguro"
     )
