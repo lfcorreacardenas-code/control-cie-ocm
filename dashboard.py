@@ -156,7 +156,7 @@ try:
 
     fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
                        template="plotly_white", height=300)
-    fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#020a54'))
+    fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#e78114'))
     fig_line.update_layout(
         paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,1)',
         margin=dict(l=20, r=20, t=20, b=20),
