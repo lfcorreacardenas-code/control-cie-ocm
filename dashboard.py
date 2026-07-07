@@ -17,7 +17,14 @@ def aplicar_estilos():
             background-size: cover;
             background-attachment: fixed;
         }
+        /* 🔵 AQUÍ SE CAMBIA EL COLOR DEL NÚMERO / TEXTO PRINCIPAL */
         [data-testid="stMetricValue"] { color: #CC5500 !important; font-weight: bold !important; }
+
+        /* 🟢 OPCIONAL: Si también quieres cambiar el color de las etiquetas de arriba */
+        [data-testid="stMetricLabel"] {
+            color: #555555 !important; /* Un gris oscuro para que sea legible */
+        }
+        
         div[data-testid="stMetric"] {
             background-color: white !important;
             border-left: 6px solid #FF6B00 !important;
