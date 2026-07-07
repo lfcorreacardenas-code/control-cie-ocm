@@ -17,7 +17,7 @@ def aplicar_estilos():
             background-size: cover;
             background-attachment: fixed;
         }
-        [data-testid="stMetricValue"] { color: #000000 !important; font-weight: bold !important; }
+        [data-testid="stMetricValue"] { color: #CC5500 !important; font-weight: bold !important; }
         div[data-testid="stMetric"] {
             background-color: white !important;
             border-left: 6px solid #FF6B00 !important;
