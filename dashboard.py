@@ -22,7 +22,7 @@ def aplicar_estilos():
 
         /* 🟢 OPCIONAL: Si también quieres cambiar el color de las etiquetas de arriba */
         [data-testid="stMetricLabel"] {
-            color: #555555 !important; /* Un gris oscuro para que sea legible */
+            color: #555555 !important; font-weight: bold !important; 
         }
         
         div[data-testid="stMetric"] {
