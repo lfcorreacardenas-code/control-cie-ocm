@@ -17,13 +17,8 @@ def aplicar_estilos():
             background-size: cover;
             background-attachment: fixed;
         }
-        /* 🔵 AQUÍ SE CAMBIA EL COLOR DEL NÚMERO / TEXTO PRINCIPAL */
         [data-testid="stMetricValue"] { color: #CC5500 !important; font-weight: bold !important; }
-
-        /* 🟢 OPCIONAL: Si también quieres cambiar el color de las etiquetas de arriba */
-        [data-testid="stMetricLabel"] {
-            color: #555555 !important; font-weight: bold !important; 
-        }
+        [data-testid="stMetricLabel"] { color: #555555 !important; font-weight: bold !important; }
         
         div[data-testid="stMetric"] {
             background-color: white !important;
@@ -58,10 +53,9 @@ def abreviar_analisis(texto):
         "Compuestos Furanos": "Furanos",
         "Elementos por ICP-AES":"Metales",
         "Karl Fischer": "FQ",
-        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Frecuencia de Voltaje aplicado, 100C,Humedad, 100C,Temperatura sala, 100C,Tipo Celda Muestra, 100C,Voltaje Medio , 100C)": "FQ",
+        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C...": "FQ",
         "Rigidez Dieléctrica": "FQ",
         "Los sedimentos y lodos soluble en Servicio de edad aceites aislantes" : "Lodos y Sedimentos",
-        "Factor de Potencia de disipación y permitividad relativa de los aceites aislantes(Factor Disipación (tan delta), 100C,Factor de Potencia a 25 °C,Frecuencia de Voltaje aplicado, 100C,Frecuencia de Voltaje aplicado, 25C,Humedad, 100C,Humedad, 25C,Temperatura sala, 100C,Temperatura sala, 25C,Tipo Celda Muestra, 100C,Tipo Celda Muestra, 25C,Voltaje Medio , 100C,Voltaje Medio , 25C)": "FQ",
         "Azufre Corrosivo en Aceites Eléctricos Aislantes":"FQ",
         "Color": "FQ",
         "Densidad": "FQ",
@@ -75,14 +69,13 @@ def abreviar_analisis(texto):
     return texto
 
 try:
-    df_original = cargar_datos()
+    df_original = cargar_datos().copy()
     
-    # --- CORRECCIÓN: Asegurar el tipo booleano en df_original desde el inicio ---
+    # Asegurar que existan las columnas para evitar errores de actualización en la estructura
     if 'Enviado' not in df_original.columns: 
-        df_original.insert(0, 'Enviado', False)
+        df_original['Enviado'] = False
     df_original['Enviado'] = df_original['Enviado'].fillna(False).astype(bool)
 
-    # 👈 AGREGAR ESTAS LÍNEAS PARA OBSERVACIONES
     if 'Observaciones' not in df_original.columns:
         df_original['Observaciones'] = ""
     df_original['Observaciones'] = df_original['Observaciones'].fillna("").astype(str)
@@ -92,7 +85,6 @@ try:
     df_base['Recibido Laboratorio'] = pd.to_datetime(df_base['Recibido Laboratorio'], errors='coerce', dayfirst=True)
     df_base['Fecha Requerida'] = pd.to_datetime(df_base['Fecha Requerida'], errors='coerce', dayfirst=True)
     
-    # (Estas líneas ya no necesitan inicializar 'Enviado' porque lo heredan corregido de df_original)
     df_base['Estado'] = df_base['Enviado'].map({True: 'Enviado ✅', False: 'Pendiente ⏳'})
     df_base['Det_Resumen'] = df_base['Determinaciones'].apply(abreviar_analisis)
 
@@ -119,7 +111,7 @@ try:
     m2.metric("Pendientes Totales", pendientes_totales)
     m3.metric("Filtro Actual", filtro_cliente)
 
-    # --- SECCIÓN DE GRÁFICOS (CONTEXTO GLOBAL) ---
+    # --- SECCIÓN DE GRÁFICOS ---
     st.write("---")
     st.markdown("### 📈 Dashboard Operativo Global")
     g1, g2 = st.columns([1.2, 0.8])
@@ -128,7 +120,6 @@ try:
         st.subheader("📊 Progreso por Cliente (Top 10)")
         top_10_names = df_base['Cliente'].value_counts().nlargest(10).index
         df_plot_bar = df_base[df_base['Cliente'].isin(top_10_names)]
-        
         data_bar = df_plot_bar.groupby(['Cliente', 'Estado']).size().reset_index(name='Cantidad')
         
         fig_bar = px.bar(data_bar, x='Cantidad', y='Cliente', color='Estado',
@@ -136,76 +127,39 @@ try:
                          color_discrete_map={'Pendiente ⏳': '#FF6B00', 'Enviado ✅': '#00ff80'},
                          category_orders={"Cliente": top_10_names.tolist()},
                          template="plotly_white", height=400)
-        
-        fig_bar.update_layout(
-            font=dict(family="Arial"),
-            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=150, r=20, t=10, b=10),
-            xaxis_title="Número de Muestras", yaxis_title=None,
-            legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-        )
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with g2:
         st.subheader("🔬 Mix Total de Ensayos")
         data_pie = df_base['Det_Resumen'].value_counts().reset_index()
         fig_pie = px.pie(data_pie, values='count', names='Det_Resumen', 
-                         color_discrete_sequence=['#FF8000', '#262730', '#555555', '#aeaeae'], 
+                         color_discrete_sequence=['#FF8000', '#262730', '#555555'], 
                          template="plotly_white", height=400)
-        fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        fig_pie.update_layout(font=dict(family="Arial"),showlegend=False, paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=0, b=0, l=0, r=0))
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # --- NUEVO GRÁFICO: EVOLUCIÓN MENSUAL ---
-# --- SECCIÓN: ANÁLISIS TEMPORAL Y CLIENTES TOP (GERENCIA) ---
+    # --- ANÁLISIS TEMPORAL ---
     st.write("---")
     st.markdown("### 📊 Análisis de Tendencias Mensuales")
     
-    # 1. Preparación de datos de tiempo
     df_timeline = df_base.dropna(subset=['Recibido Laboratorio']).copy()
     df_timeline['Mes'] = df_timeline['Recibido Laboratorio'].dt.strftime('%Y-%m')
     
-    # Creamos dos columnas para una distribución limpia de los reportes temporales
     gt1, gt2 = st.columns(2)
     
     with gt1:
         st.subheader("📅 Evolución Total de Muestras")
         data_timeline = df_timeline.groupby('Mes').size().reset_index(name='Cantidad').sort_values('Mes')
-        
-        fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, 
-                           template="plotly_white", height=400)
-        fig_line.update_traces(line_color='#FF6B00', line_width=3, marker=dict(size=8, color='#eaecf0'))
-        fig_line.update_layout(
-            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=20, r=20, t=10, b=20),
-            xaxis_title="Mes de Recepción", yaxis_title="Cantidad de Muestras"
-        )
+        fig_line = px.line(data_timeline, x='Mes', y='Cantidad', markers=True, template="plotly_white", height=400)
+        fig_line.update_traces(line_color='#FF6B00')
         st.plotly_chart(fig_line, use_container_width=True)
         
     with gt2:
         st.subheader("🏆 Clientes Principales por Mes")
-        
-        # Identificamos los 5 clientes con mayor volumen histórico para no saturar el gráfico
         top_5_clientes = df_base['Cliente'].value_counts().nlargest(5).index.tolist()
-        
-        # Filtramos los datos para incluir solo a estos clientes top
         df_top_mes = df_timeline[df_timeline['Cliente'].isin(top_5_clientes)].copy()
-        
-        # Agrupamos por mes y cliente
         data_top_mes = df_top_mes.groupby(['Mes', 'Cliente']).size().reset_index(name='Cantidad').sort_values('Mes')
         
-        # Creamos el gráfico de barras apiladas (lo puedes cambiar a barmode='group' si prefieres barras paralelas)
-        fig_top_bar = px.bar(data_top_mes, x='Mes', y='Cantidad', color='Cliente',
-                             barmode='stack',
-                             color_discrete_sequence=['#FF8000', '#262730', '#f2f2f2', '#ff1111', '#a8bcab'],
-                             template="plotly_white", height=400)
-        
-        fig_top_bar.update_layout(
-            paper_bgcolor='rgba(0,0,0,1)', plot_bgcolor='rgba(0,0,0,1)',
-            margin=dict(l=20, r=20, t=10, b=20),
-            xaxis_title="Mes de Recepción", yaxis_title="Muestras por Cliente",
-            legend=dict(title=None, orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
-        )
+        fig_top_bar = px.bar(data_top_mes, x='Mes', y='Cantidad', color='Cliente', barmode='stack', template="plotly_white", height=400)
         st.plotly_chart(fig_top_bar, use_container_width=True)
     
     # --- TABLA OPERATIVA ---
@@ -213,12 +167,10 @@ try:
     st.subheader("📋 Gestión de Reportes")
     df_ver = df_vista.copy()
     
-    # CORRECCIÓN: Asignar las columnas de fecha sin transformarlas a string (.strftime)
     df_ver['F. Ingreso'] = df_ver['Recibido Laboratorio']
     df_ver['F. Requerida'] = df_ver['Fecha Requerida']
 
     res = st.data_editor(
-        # 👈 Se añade 'Observaciones' al final de la lista
         df_ver[['Enviado', 'Projob', 'Cliente', 'Det_Resumen', 'F. Ingreso', 'F. Requerida', 'Observaciones']],
         use_container_width=True, 
         hide_index=True,
@@ -226,27 +178,28 @@ try:
             "Enviado": st.column_config.CheckboxColumn("Enviado ✅"),
             "F. Ingreso": st.column_config.DateColumn("F. Ingreso", format="DD-MM-YYYY"),
             "F. Requerida": st.column_config.DateColumn("F. Requerida", format="DD-MM-YYYY"),
-            
-            # 👈 NUEVA CONFIGURACIÓN PARA EL CUADRO DE TEXTO
-            "Observaciones": st.column_config.TextColumn("Observaciones", help="Escribe notas aquí", width="large"),
+            "Observaciones": st.column_config.TextColumn("Observaciones", width="large"),
         },
         key="editor_final_seguro"
     )
 
     if st.button("💾 Guardar Cambios"):
-        for i, row in res.iterrows():
-            # Esto guarda el check de enviado (ya lo tenías)
-            df_original.loc[df_original['Projob'] == row['Projob'], 'Enviado'] = row['Enviado']
+        # Mapeo seguro usando 'Projob' como clave para evitar desajustes de índice por filtros
+        for _, row in res.iterrows():
+            idx_original = df_original[df_original['Projob'] == row['Projob']].index
+            if not idx_original.empty:
+                df_original.loc[idx_original, 'Enviado'] = row['Enviado']
+                df_original.loc[idx_original, 'Observaciones'] = row['Observaciones']
             
-            # 💡 ESTA ES LA LÍNEA QUE DEBES AGREGAR:
-            df_original.loc[df_original['Projob'] == row['Projob'], 'Observaciones'] = row['Observaciones']
-            
-        # Ahora sí, conn.update enviará AMBOS datos a Google Sheets
-        conn.update(data=df_original.drop(columns=['Det_Resumen', 'Estado'], errors='ignore'))
+        # Limpieza estricta de columnas calculadas que no pertenecen al archivo original
+        columnas_a_borrar = ['Det_Resumen', 'Estado', 'F. Ingreso', 'F. Requerida']
+        df_guardar = df_original.drop(columns=columnas_a_borrar, errors='ignore')
+        
+        conn.update(data=df_guardar)
         st.cache_data.clear()
-        st.success("¡Datos actualizados!")
+        st.success("¡Datos actualizados con éxito!")
         time.sleep(1)
         st.rerun()
 
 except Exception as e:
-    st.error(f"Error de sistema: {e}")
+    st.error(f"⚠️ Error en la aplicación: {e}")
